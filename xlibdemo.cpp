@@ -118,6 +118,35 @@ int main(int argc, char **argv)
   float y_scalefactor;
   Point curr_point;
 
+  struct LineEndPoint{
+	  Point startPoint;
+	  Point endPoint;
+  };
+  std::vector<LineEndPoint> P;
+  
+  cout << S.size() << " the stack size\n";
+  struct LineEndPoint l;
+  struct Point firstPoint = S.top();
+  struct Point lastPoint;
+
+  while(!S.empty()){
+		  
+		  curr_point = S.top();
+		  S.pop();
+		  
+		  if (S.size() == 0){
+			  lastPoint = curr_point;
+			  break;
+		  }
+		  else if(S.size() == 1){
+			  lastPoint = S.top();
+		  }
+		  l = LineEndPoint({curr_point, S.top()});
+		  P.push_back(LineEndPoint({curr_point, S.top()}));
+	  }
+  P.push_back(LineEndPoint({firstPoint, lastPoint}));
+  
+  
   /********** display begins here  **********/
 
   /* opening display: basic connection to X Server */
@@ -223,18 +252,18 @@ int main(int argc, char **argv)
   XFillArc(display_ptr, win, gc_red,
            500, 500,
            win_height / 50, win_height / 50, 0, 360 * 64);
-
-  /* and now it starts: the event loop */
-
+  
+ 
     // while(!S.empty()){
 		  
 	// 	  curr_point = S.top();
 	// 	  S.pop();
 	// 	  XDrawLine(display_ptr, win, gc_red, x_scalefactor * (curr_point.x - min_x), y_scalefactor * (curr_point.y - min_y),
-    //                y_scalefactor * (S.top().x - min_x), y_scalefactor * (S.top().y - min_y) );
+    //                x_scalefactor * (S.top().x - min_x), y_scalefactor * (S.top().y - min_y) );
 		  
 	//   }
 
+  /* and now it starts: the event loop */
   while (1)
   {
     XNextEvent(display_ptr, &report);
@@ -252,6 +281,11 @@ int main(int argc, char **argv)
                  win_height / 100, win_height / 100, 0, 360 * 64);
       }
 	  
+	  for (int i=0; i<P.size();i++){
+		  XDrawLine(display_ptr, win, gc, x_scalefactor * (P[i].startPoint.x - min_x), y_scalefactor * (P[i].startPoint.y - min_y),
+                   y_scalefactor * (P[i].endPoint.x - min_x), y_scalefactor * (P[i].endPoint.y - min_y) );
+	  }
+	  
 	//   curr_point = S.top();
 	//   S.pop();
 	//   XDrawLine(display_ptr, win, gc_red, x_scalefactor * (curr_point.x - min_x), y_scalefactor * (curr_point.y - min_y),
@@ -265,6 +299,9 @@ int main(int argc, char **argv)
     //                y_scalefactor * (S.top().x - min_x), y_scalefactor * (S.top().y - min_y) );
 		  
 	//   }
+	
+	
+  
 
       break;
     case ConfigureNotify:
