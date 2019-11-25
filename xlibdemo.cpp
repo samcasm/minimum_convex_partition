@@ -115,38 +115,38 @@ int main(int argc, char **argv)
        << max_x << "max_x\n"
        << max_y << "max_y\n";
   
-  stack<Point> S = convexHull_recursive(points_vector, points_vector.size());
+  vector<stack<Point>> S = convexHull(points_vector, points_vector.size());
 
-  float x_scalefactor;
-  float y_scalefactor;
-  Point curr_point;
+  // float x_scalefactor;
+  // float y_scalefactor;
+  // Point curr_point;
 
-  struct LineEndPoint{
-	  Point startPoint;
-	  Point endPoint;
-  };
-  std::vector<LineEndPoint> P;
+  // struct LineEndPoint{
+	//   Point startPoint;
+	//   Point endPoint;
+  // };
+  // std::vector<LineEndPoint> P;
   
-  struct LineEndPoint l;
-  struct Point firstPoint = S.top();
-  struct Point lastPoint;
+  // struct LineEndPoint l;
+  // struct Point firstPoint = S.top();
+  // struct Point lastPoint;
 
-  while(!S.empty()){
+  // while(!S.empty()){
 		  
-		  curr_point = S.top();
-		  S.pop();
+	// 	  curr_point = S.top();
+	// 	  S.pop();
 		  
-		  if (S.size() == 0){
-			  lastPoint = curr_point;
-			  break;
-		  }
-		  else if(S.size() == 1){
-			  lastPoint = S.top();
-		  }
-		  l = LineEndPoint({curr_point, S.top()});
-		  P.push_back(LineEndPoint({curr_point, S.top()}));
-	  }
-  P.push_back(LineEndPoint({firstPoint, lastPoint}));
+	// 	  if (S.size() == 0){
+	// 		  lastPoint = curr_point;
+	// 		  break;
+	// 	  }
+	// 	  else if(S.size() == 1){
+	// 		  lastPoint = S.top();
+	// 	  }
+	// 	  l = LineEndPoint({curr_point, S.top()});
+	// 	  P.push_back(LineEndPoint({curr_point, S.top()}));
+	//   }
+  // P.push_back(LineEndPoint({firstPoint, lastPoint}));
   
   
   /********** display begins here  **********/
@@ -173,8 +173,8 @@ int main(int argc, char **argv)
   win_width = display_width / 2;
   win_height = (int)(win_width / 1.7); /*rectangular window*/
   
-  x_scalefactor = (float(win_width) / float(max_x - min_x));
-  y_scalefactor = (float(win_height) / float(max_y - min_y));
+  // x_scalefactor = (float(win_width) / float(max_x - min_x));
+  // y_scalefactor = (float(win_height) / float(max_y - min_y));
 
   win = XCreateSimpleWindow(display_ptr, RootWindow(display_ptr, screen_num),
                             win_x, win_y, win_width, win_height, border_width,
@@ -276,17 +276,17 @@ int main(int argc, char **argv)
              each time some part ofthe window gets exposed (becomes visible) */
      
 	 
-      for (int i = 0; i < points_vector.size(); i++)
-      {
-        XFillArc(display_ptr, win, gc,
-                 x_scalefactor * (points_vector[i].x - min_x), y_scalefactor * (points_vector[i].y - min_y),
-                 win_height / 100, win_height / 100, 0, 360 * 64);
-      }
+    //   for (int i = 0; i < points_vector.size(); i++)
+    //   {
+    //     XFillArc(display_ptr, win, gc,
+    //              x_scalefactor * (points_vector[i].x - min_x), y_scalefactor * (points_vector[i].y - min_y),
+    //              win_height / 100, win_height / 100, 0, 360 * 64);
+    //   }
 	  
-	  for (int i=0; i<P.size();i++){
-		  XDrawLine(display_ptr, win, gc, x_scalefactor * (P[i].startPoint.x - min_x), y_scalefactor * (P[i].startPoint.y - min_y),
-                   y_scalefactor * (P[i].endPoint.x - min_x), y_scalefactor * (P[i].endPoint.y - min_y) );
-	  }
+	  // for (int i=0; i<P.size();i++){
+		//   XDrawLine(display_ptr, win, gc, x_scalefactor * (P[i].startPoint.x - min_x), y_scalefactor * (P[i].startPoint.y - min_y),
+    //                y_scalefactor * (P[i].endPoint.x - min_x), y_scalefactor * (P[i].endPoint.y - min_y) );
+	  // }
 	
 	// ********************** //
 

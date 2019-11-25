@@ -9,6 +9,6 @@ struct Point{
 };
 
 std::vector<stack<Point>> convexHull(vector<Point> points, int n);
-stack<Point> convexHull_recursive(vector<Point> points, int n);
+void convexHull_recursive(vector<stack<Point>> &result,vector<Point> &points, int n);
 
 #endif

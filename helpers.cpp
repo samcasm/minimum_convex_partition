@@ -63,7 +63,11 @@ int compare(const void *vp1, const void *vp2)
    return (o == 2)? -1: 1; 
 } 
 
-stack<Point> convexHull_recursive(vector<Point> points, int n){
+void convexHull_recursive(vector<stack<Point>> &result, vector<Point> &points, int n){
+    // if(n < 2){
+    //     cout << "break condition\n";
+    //     return;
+    // }
     // Find the bottommost point 
     int ymin = points[0].y, min = 0; 
     for (int i = 1; i < n; i++) 
@@ -110,7 +114,10 @@ stack<Point> convexHull_recursive(vector<Point> points, int n){
     stack<Point> S; 
     // If modified array of points has less than 3 points, 
     // convex hull is not possible 
-    if (m < 3) return S; 
+    if (m < 3) {
+        cout << "reached break point";
+        return;
+    } 
     
     // Create an empty stack and push first three points 
     // to it. 
@@ -140,9 +147,9 @@ stack<Point> convexHull_recursive(vector<Point> points, int n){
         temp.insert(points[i].index);
     } 
    
-    cout << S.size() << "the size of the stack\n";
-    cout << points.size() << "points vector after\n";
-    cout << temp.size() << "temp size";
+    // cout << S.size() << "the size of the stack\n";
+    // cout << points.size() << "points vector after\n";
+    // cout << temp.size() << "temp size";
 
     points.erase(std::remove_if(
     points.begin(), points.end(),
@@ -156,29 +163,30 @@ stack<Point> convexHull_recursive(vector<Point> points, int n){
     }), points.end());
 
     cout << points.size()<<"The points after\n"; 
-    // result.push_back(S);
-    // convexHull_recursive(result, points, m);
+    result.push_back(S);
+    convexHull_recursive(result, points, points.size());
 
-
-    return S;
+    return;
 }
 
 
 
 // Prints convex hull of a set of n points. 
-// std::vector<stack<Point>> convexHull(vector<Point> points, int n) 
-// { 
-//     std::vector<stack<Point>> result;
+std::vector<stack<Point>> convexHull(vector<Point> points, int n) 
+{ 
+    std::vector<stack<Point>> result;
     
     
-//     convexHull_recursive(result, points, n);
-//     // Now stack has the output points, print contents of stack 
-//     //    while (!S.empty()) 
-//     //    { 
-//     //        Point p = S.top(); 
-//     //        cout << "(" << p.x << ", " << p.y <<")" << endl; 
-//     //        S.pop(); 
-//     //    } 
+    convexHull_recursive(result, points, n);
+    // Now stack has the output points, print contents of stack 
+    //    while (!S.empty()) 
+    //    { 
+    //        Point p = S.top(); 
+    //        cout << "(" << p.x << ", " << p.y <<")" << endl; 
+    //        S.pop(); 
+    //    } 
 
-//     return result;
-// } 
+    cout << result.size() <<"all convex hulls vector size";
+
+    return result;
+} 
