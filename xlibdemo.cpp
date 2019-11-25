@@ -49,6 +49,7 @@ int main(int argc, char **argv)
   struct json_object *point;
   struct json_object *x;
   struct json_object *y;
+  struct json_object *index;
 
   size_t n_points;
   size_t n_point;
@@ -74,9 +75,10 @@ int main(int argc, char **argv)
   for (i = 0; i < n_points; i++)
   {
     point = json_object_array_get_idx(points, i);
+    json_object_object_get_ex(point, "i", &index);
     json_object_object_get_ex(point, "x", &x);
     json_object_object_get_ex(point, "y", &y);
-    struct Point temp_point = Point({json_object_get_int(x), json_object_get_int(y)});
+    struct Point temp_point = Point({json_object_get_int(index),json_object_get_double(x), json_object_get_double(y)});
     points_vector.push_back(temp_point);
   }
   cout << points_vector.size() << " points\n";
@@ -85,6 +87,7 @@ int main(int argc, char **argv)
   float min_y = INT_MAX;
   float max_x = INT_MIN;
   float max_y = INT_MIN;
+
 
   for (i = 0; i < points_vector.size(); i++)
   {
@@ -111,8 +114,8 @@ int main(int argc, char **argv)
        << min_y << "min_y \n"
        << max_x << "max_x\n"
        << max_y << "max_y\n";
-
-  stack<Point> S = convexHull(points_vector, points_vector.size());
+  
+  stack<Point> S = convexHull_recursive(points_vector, points_vector.size());
 
   float x_scalefactor;
   float y_scalefactor;
@@ -124,7 +127,6 @@ int main(int argc, char **argv)
   };
   std::vector<LineEndPoint> P;
   
-  cout << S.size() << " the stack size\n";
   struct LineEndPoint l;
   struct Point firstPoint = S.top();
   struct Point lastPoint;
@@ -285,7 +287,9 @@ int main(int argc, char **argv)
 		  XDrawLine(display_ptr, win, gc, x_scalefactor * (P[i].startPoint.x - min_x), y_scalefactor * (P[i].startPoint.y - min_y),
                    y_scalefactor * (P[i].endPoint.x - min_x), y_scalefactor * (P[i].endPoint.y - min_y) );
 	  }
-	  
+	
+	// ********************** //
+
 	//   curr_point = S.top();
 	//   S.pop();
 	//   XDrawLine(display_ptr, win, gc_red, x_scalefactor * (curr_point.x - min_x), y_scalefactor * (curr_point.y - min_y),

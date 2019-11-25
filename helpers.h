@@ -4,9 +4,11 @@
 using namespace std;
 
 struct Point{
+    int index;
     double x, y;
 };
 
-stack<Point> convexHull(vector<Point> points, int n);
+std::vector<stack<Point>> convexHull(vector<Point> points, int n);
+stack<Point> convexHull_recursive(vector<Point> points, int n);
 
 #endif

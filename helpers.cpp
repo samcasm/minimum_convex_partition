@@ -2,6 +2,9 @@
 #include <stack> 
 #include <stdlib.h> 
 #include "helpers.h"
+#include <algorithm>
+#include <unordered_set>
+
 using namespace std; 
 
 Point p0;
@@ -60,80 +63,122 @@ int compare(const void *vp1, const void *vp2)
    return (o == 2)? -1: 1; 
 } 
 
-// Prints convex hull of a set of n points. 
-stack<Point> convexHull(vector<Point> points, int n) 
-{ 
-   // Find the bottommost point 
-   int ymin = points[0].y, min = 0; 
-   for (int i = 1; i < n; i++) 
-   { 
-     int y = points[i].y; 
-  
-     // Pick the bottom-most or chose the left 
-     // most point in case of tie 
-     if ((y < ymin) || (ymin == y && 
-         points[i].x < points[min].x)) 
-        ymin = points[i].y, min = i; 
-   } 
-  
-   // Place the bottom-most point at first position 
-   swap(points[0], points[min]); 
-  
-   // Sort n-1 points with respect to the first point. 
-   // A point p1 comes before p2 in sorted output if p2 
-   // has larger polar angle (in counterclockwise 
-   // direction) than p1 
-   p0 = points[0]; 
-   qsort(&points[1], n-1, sizeof(Point), compare); 
-  
-   // If two or more points make same angle with p0, 
-   // Remove all but the one that is farthest from p0 
-   // Remember that, in above sorting, our criteria was 
-   // to keep the farthest point at the end when more than 
-   // one points have same angle. 
-   int m = 1; // Initialize size of modified array 
-   for (int i=1; i<n; i++) 
-   { 
-       // Keep removing i while angle of i and i+1 is same 
-       // with respect to p0 
-       while (i < n-1 && orientation(p0, points[i], 
-                                    points[i+1]) == 0) 
-          i++; 
-  
-  
-       points[m] = points[i]; 
-       m++;  // Update size of modified array 
-   } 
-  
-   stack<Point> S; 
-   // If modified array of points has less than 3 points, 
-   // convex hull is not possible 
-   if (m < 3) return S; 
-  
-   // Create an empty stack and push first three points 
-   // to it. 
-   S.push(points[0]); 
-   S.push(points[1]); 
-   S.push(points[2]); 
-  
-   // Process remaining n-3 points 
-   for (int i = 3; i < m; i++) 
-   { 
-      // Keep removing top while the angle formed by 
-      // points next-to-top, top, and points[i] makes 
-      // a non-left turn 
-      while (orientation(nextToTop(S), S.top(), points[i]) != 2) 
-         S.pop(); 
-      S.push(points[i]); 
-   } 
-  
-   // Now stack has the output points, print contents of stack 
-//    while (!S.empty()) 
-//    { 
-//        Point p = S.top(); 
-//        cout << "(" << p.x << ", " << p.y <<")" << endl; 
-//        S.pop(); 
-//    } 
+stack<Point> convexHull_recursive(vector<Point> points, int n){
+    // Find the bottommost point 
+    int ymin = points[0].y, min = 0; 
+    for (int i = 1; i < n; i++) 
+    { 
+        int y = points[i].y; 
+    
+        // Pick the bottom-most or chose the left 
+        // most point in case of tie 
+        if ((y < ymin) || (ymin == y && 
+            points[i].x < points[min].x)) 
+            ymin = points[i].y, min = i; 
+    } 
+    
+    // Place the bottom-most point at first position 
+    swap(points[0], points[min]); 
+    
+    // Sort n-1 points with respect to the first point. 
+    // A point p1 comes before p2 in sorted output if p2 
+    // has larger polar angle (in counterclockwise 
+    // direction) than p1 
+    p0 = points[0]; 
+    qsort(&points[1], n-1, sizeof(Point), compare); 
+    
+    // If two or more points make same angle with p0, 
+    // Remove all but the one that is farthest from p0 
+    // Remember that, in above sorting, our criteria was 
+    // to keep the farthest point at the end when more than 
+    // one points have same angle. 
+    int m = 1; // Initialize size of modified array 
+    for (int i=1; i<n; i++) 
+    { 
+        // Keep removing i while angle of i and i+1 is same 
+        // with respect to p0 
+        while (i < n-1 && orientation(p0, points[i], 
+                                        points[i+1]) == 0) 
+            i++; 
+    
+    
+        points[m] = points[i]; 
+        m++;  // Update size of modified array 
+    } 
+    
+    cout <<  m << " This is the size of m\n";
+    stack<Point> S; 
+    // If modified array of points has less than 3 points, 
+    // convex hull is not possible 
+    if (m < 3) return S; 
+    
+    // Create an empty stack and push first three points 
+    // to it. 
+    S.push(points[0]); 
+    S.push(points[1]); 
+    S.push(points[2]); 
 
-   return S;
-} 
+    std::unordered_set<int> temp;
+    
+    // Process remaining n-3 points 
+    for (int i = 3; i < m; i++) 
+    { 
+        // Keep removing top while the angle formed by 
+        // points next-to-top, top, and points[i] makes 
+        // a non-left turn 
+        while (orientation(nextToTop(S), S.top(), points[i]) != 2){
+            std::unordered_set<int>::const_iterator got = temp.find(S.top().index);
+
+            if ( got == temp.end() )
+                std::cout << "not found in myset\n";
+            else
+                cout << *got << " is in myset\n";
+                temp.erase(S.top().index);
+            S.pop(); 
+        }
+        S.push(points[i]); 
+        temp.insert(points[i].index);
+    } 
+   
+    cout << S.size() << "the size of the stack\n";
+    cout << points.size() << "points vector after\n";
+    cout << temp.size() << "temp size";
+
+    points.erase(std::remove_if(
+    points.begin(), points.end(),
+    [&](const Point& p) { 
+        std::unordered_set<int>::const_iterator got = temp.find (p.index);
+
+        if ( got == temp.end() )
+            return true;
+        else
+            return false;// put your condition here
+    }), points.end());
+
+    cout << points.size()<<"The points after\n"; 
+    // result.push_back(S);
+    // convexHull_recursive(result, points, m);
+
+
+    return S;
+}
+
+
+
+// Prints convex hull of a set of n points. 
+// std::vector<stack<Point>> convexHull(vector<Point> points, int n) 
+// { 
+//     std::vector<stack<Point>> result;
+    
+    
+//     convexHull_recursive(result, points, n);
+//     // Now stack has the output points, print contents of stack 
+//     //    while (!S.empty()) 
+//     //    { 
+//     //        Point p = S.top(); 
+//     //        cout << "(" << p.x << ", " << p.y <<")" << endl; 
+//     //        S.pop(); 
+//     //    } 
+
+//     return result;
+// } 
