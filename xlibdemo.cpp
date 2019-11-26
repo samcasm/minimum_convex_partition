@@ -115,39 +115,17 @@ int main(int argc, char **argv)
        << max_x << "max_x\n"
        << max_y << "max_y\n";
   
-  vector<stack<Point>> S = convexHull(points_vector, points_vector.size());
+  vector<stack<Point>> P = convexHull(points_vector, points_vector.size());
 
-  // float x_scalefactor;
-  // float y_scalefactor;
-  // Point curr_point;
+  float x_scalefactor;
+  float y_scalefactor;
 
-  // struct LineEndPoint{
-	//   Point startPoint;
-	//   Point endPoint;
-  // };
-  // std::vector<LineEndPoint> P;
-  
-  // struct LineEndPoint l;
-  // struct Point firstPoint = S.top();
-  // struct Point lastPoint;
 
-  // while(!S.empty()){
-		  
-	// 	  curr_point = S.top();
-	// 	  S.pop();
-		  
-	// 	  if (S.size() == 0){
-	// 		  lastPoint = curr_point;
-	// 		  break;
-	// 	  }
-	// 	  else if(S.size() == 1){
-	// 		  lastPoint = S.top();
-	// 	  }
-	// 	  l = LineEndPoint({curr_point, S.top()});
-	// 	  P.push_back(LineEndPoint({curr_point, S.top()}));
-	//   }
-  // P.push_back(LineEndPoint({firstPoint, lastPoint}));
-  
+  stack<Point> S; 
+  Point curr_point;
+  Point last_point;
+  Point first_point;
+
   
   /********** display begins here  **********/
 
@@ -173,8 +151,8 @@ int main(int argc, char **argv)
   win_width = display_width / 2;
   win_height = (int)(win_width / 1.7); /*rectangular window*/
   
-  // x_scalefactor = (float(win_width) / float(max_x - min_x));
-  // y_scalefactor = (float(win_height) / float(max_y - min_y));
+  x_scalefactor = (float(win_width) / float(max_x - min_x));
+  y_scalefactor = (float(win_height) / float(max_y - min_y));
 
   win = XCreateSimpleWindow(display_ptr, RootWindow(display_ptr, screen_num),
                             win_x, win_y, win_width, win_height, border_width,
@@ -254,16 +232,6 @@ int main(int argc, char **argv)
   XFillArc(display_ptr, win, gc_red,
            500, 500,
            win_height / 50, win_height / 50, 0, 360 * 64);
-  
- 
-    // while(!S.empty()){
-		  
-	// 	  curr_point = S.top();
-	// 	  S.pop();
-	// 	  XDrawLine(display_ptr, win, gc_red, x_scalefactor * (curr_point.x - min_x), y_scalefactor * (curr_point.y - min_y),
-    //                x_scalefactor * (S.top().x - min_x), y_scalefactor * (S.top().y - min_y) );
-		  
-	//   }
 
   /* and now it starts: the event loop */
   while (1)
@@ -276,36 +244,42 @@ int main(int argc, char **argv)
              each time some part ofthe window gets exposed (becomes visible) */
      
 	 
-    //   for (int i = 0; i < points_vector.size(); i++)
-    //   {
-    //     XFillArc(display_ptr, win, gc,
-    //              x_scalefactor * (points_vector[i].x - min_x), y_scalefactor * (points_vector[i].y - min_y),
-    //              win_height / 100, win_height / 100, 0, 360 * 64);
-    //   }
-	  
-	  // for (int i=0; i<P.size();i++){
-		//   XDrawLine(display_ptr, win, gc, x_scalefactor * (P[i].startPoint.x - min_x), y_scalefactor * (P[i].startPoint.y - min_y),
-    //                y_scalefactor * (P[i].endPoint.x - min_x), y_scalefactor * (P[i].endPoint.y - min_y) );
-	  // }
-	
-	// ********************** //
+      for (int i = 0; i < points_vector.size(); i++)
+      {
+        XFillArc(display_ptr, win, gc,
+                 x_scalefactor * (points_vector[i].x - min_x), y_scalefactor * (points_vector[i].y - min_y),
+                 win_height / 100, win_height / 100, 0, 360 * 64);
+      }
 
-	//   curr_point = S.top();
-	//   S.pop();
-	//   XDrawLine(display_ptr, win, gc_red, x_scalefactor * (curr_point.x - min_x), y_scalefactor * (curr_point.y - min_y),
-    //                y_scalefactor * (S.top().x - min_x), y_scalefactor * (S.top().y - min_y) );
-	//   S.top();
-	//   while(!S.empty()){
-		  
-	// 	  curr_point = S.top();
-	// 	  S.pop();
-	// 	  XDrawLine(display_ptr, win, gc_red, x_scalefactor * (curr_point.x - min_x), y_scalefactor * (curr_point.y - min_y),
-    //                y_scalefactor * (S.top().x - min_x), y_scalefactor * (S.top().y - min_y) );
-		  
-	//   }
+      
+	  
+
+      for (int i=0; i<P.size();i++){
+        first_point = P[i].top();
+        S = P[i];
+        while(!S.empty()){
+          
+            curr_point = S.top();
+            S.pop();
+            
+            if (S.size() == 0){
+              last_point = curr_point;
+              break;
+            }
+            else if(S.size() == 1){
+              last_point = S.top();
+            }
+            XDrawLine(display_ptr, win, gc, x_scalefactor * (curr_point.x - min_x), y_scalefactor * (curr_point.y - min_y),
+                      y_scalefactor * (S.top().x - min_x), y_scalefactor * (S.top().y - min_y) );
+
+           
+        }
+        XDrawLine(display_ptr, win, gc, x_scalefactor * (first_point.x - min_x), y_scalefactor * (first_point.y - min_y),
+                      y_scalefactor * (last_point.x - min_x), y_scalefactor * (last_point.y - min_y) );
+
+          
+      }
 	
-	
-  
 
       break;
     case ConfigureNotify:

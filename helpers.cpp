@@ -64,10 +64,10 @@ int compare(const void *vp1, const void *vp2)
 } 
 
 void convexHull_recursive(vector<stack<Point>> &result, vector<Point> &points, int n){
-    // if(n < 2){
-    //     cout << "break condition\n";
-    //     return;
-    // }
+    if(n < 2){
+        cout << "break condition\n";
+        return;
+    }
     // Find the bottommost point 
     int ymin = points[0].y, min = 0; 
     for (int i = 1; i < n; i++) 
@@ -110,7 +110,6 @@ void convexHull_recursive(vector<stack<Point>> &result, vector<Point> &points, i
         m++;  // Update size of modified array 
     } 
     
-    cout <<  m << " This is the size of m\n";
     stack<Point> S; 
     // If modified array of points has less than 3 points, 
     // convex hull is not possible 
@@ -119,13 +118,12 @@ void convexHull_recursive(vector<stack<Point>> &result, vector<Point> &points, i
         return;
     } 
     
+    std::unordered_set<int> temp;
     // Create an empty stack and push first three points 
     // to it. 
     S.push(points[0]); 
     S.push(points[1]); 
     S.push(points[2]); 
-
-    std::unordered_set<int> temp;
     
     // Process remaining n-3 points 
     for (int i = 3; i < m; i++) 
@@ -134,36 +132,29 @@ void convexHull_recursive(vector<stack<Point>> &result, vector<Point> &points, i
         // points next-to-top, top, and points[i] makes 
         // a non-left turn 
         while (orientation(nextToTop(S), S.top(), points[i]) != 2){
-            std::unordered_set<int>::const_iterator got = temp.find(S.top().index);
-
-            if ( got == temp.end() )
-                std::cout << "not found in myset\n";
-            else
-                cout << *got << " is in myset\n";
-                temp.erase(S.top().index);
+            
             S.pop(); 
         }
         S.push(points[i]); 
-        temp.insert(points[i].index);
     } 
-   
-    // cout << S.size() << "the size of the stack\n";
-    // cout << points.size() << "points vector after\n";
-    // cout << temp.size() << "temp size";
 
+    result.push_back(S);
+    while(!S.empty()){
+        temp.insert(S.top().index);
+        S.pop();
+    }
+   
     points.erase(std::remove_if(
     points.begin(), points.end(),
     [&](const Point& p) { 
         std::unordered_set<int>::const_iterator got = temp.find (p.index);
 
         if ( got == temp.end() )
-            return true;
+            return false;
         else
-            return false;// put your condition here
+            return true;// put your condition here
     }), points.end());
 
-    cout << points.size()<<"The points after\n"; 
-    result.push_back(S);
     convexHull_recursive(result, points, points.size());
 
     return;
@@ -178,15 +169,6 @@ std::vector<stack<Point>> convexHull(vector<Point> points, int n)
     
     
     convexHull_recursive(result, points, n);
-    // Now stack has the output points, print contents of stack 
-    //    while (!S.empty()) 
-    //    { 
-    //        Point p = S.top(); 
-    //        cout << "(" << p.x << ", " << p.y <<")" << endl; 
-    //        S.pop(); 
-    //    } 
-
-    cout << result.size() <<"all convex hulls vector size";
 
     return result;
 } 
