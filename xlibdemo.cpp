@@ -1,5 +1,5 @@
 
-/* compiles with command line  gcc xlibdemo.c -lX11 -lm -L/usr/X11R6/lib */
+/* compiles with command line g++ xlibdemo.cpp helpers.cpp -L/usr/X11R6/lib -lX11 -ljson-c */
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xos.h>
@@ -58,7 +58,7 @@ int main(int argc, char **argv)
 
   std::vector<Point> points_vector;
 
-  fp = fopen("test1.json", "r");
+  fp = fopen("test.json", "r");
   fread(buffer, 4000, 1, fp);
   fclose(fp);
 
@@ -116,6 +116,7 @@ int main(int argc, char **argv)
        << max_y << "max_y\n";
   
   vector<stack<Point>> P = convexHull(points_vector, points_vector.size());
+  vector<vector<Point>> NP;
 
   float x_scalefactor;
   float y_scalefactor;
@@ -125,6 +126,26 @@ int main(int argc, char **argv)
   Point curr_point;
   Point last_point;
   Point first_point;
+
+  for (int i=0; i<P.size(); i++){
+    stack<Point> newS = P[i];
+    vector<Point> newV;
+    while (!newS.empty()){
+      newV.push_back(newS.top());
+      newS.pop();
+    }
+    cout << "The stack size " << newV.size() << " \n";
+    NP.push_back(newV);
+  }
+
+  cout << NP.size() << "The size for vetor convex hull" << endl;
+
+  vector<Point> outer_hull;
+  vector<Point> inner_hull;
+
+  int outer_iter;
+  int inner_iter; 
+  Point first_inner_point;
 
   
   /********** display begins here  **********/
@@ -197,7 +218,7 @@ int main(int argc, char **argv)
   /* create graphics context, so that we may draw in this window */
   gc = XCreateGC(display_ptr, win, valuemask, &gc_values);
   XSetForeground(display_ptr, gc, BlackPixel(display_ptr, screen_num));
-  XSetLineAttributes(display_ptr, gc, 4, LineSolid, CapRound, JoinRound);
+  XSetLineAttributes(display_ptr, gc, 2, LineSolid, CapRound, JoinRound);
   /* and three other graphics contexts, to draw in yellow and red and grey*/
   gc_yellow = XCreateGC(display_ptr, win, valuemask, &gc_yellow_values);
   XSetLineAttributes(display_ptr, gc_yellow, 6, LineSolid, CapRound, JoinRound);
@@ -232,6 +253,7 @@ int main(int argc, char **argv)
   XFillArc(display_ptr, win, gc_red,
            500, 500,
            win_height / 50, win_height / 50, 0, 360 * 64);
+  
 
   /* and now it starts: the event loop */
   while (1)
@@ -247,12 +269,10 @@ int main(int argc, char **argv)
       for (int i = 0; i < points_vector.size(); i++)
       {
         XFillArc(display_ptr, win, gc,
-                 x_scalefactor * (points_vector[i].x - min_x), y_scalefactor * (points_vector[i].y - min_y),
+                 (x_scalefactor * (points_vector[i].x - min_x)) - win_height / 200 ,( y_scalefactor * (points_vector[i].y - min_y)) - win_height / 200,
                  win_height / 100, win_height / 100, 0, 360 * 64);
       }
 
-      
-	  
 
       for (int i=0; i<P.size();i++){
         first_point = P[i].top();
@@ -261,7 +281,6 @@ int main(int argc, char **argv)
           
             curr_point = S.top();
             S.pop();
-            
             if (S.size() == 0){
               last_point = curr_point;
               break;
@@ -270,16 +289,38 @@ int main(int argc, char **argv)
               last_point = S.top();
             }
             XDrawLine(display_ptr, win, gc, x_scalefactor * (curr_point.x - min_x), y_scalefactor * (curr_point.y - min_y),
-                      y_scalefactor * (S.top().x - min_x), y_scalefactor * (S.top().y - min_y) );
+                      x_scalefactor * (S.top().x - min_x), y_scalefactor * (S.top().y - min_y) );
 
            
         }
         XDrawLine(display_ptr, win, gc, x_scalefactor * (first_point.x - min_x), y_scalefactor * (first_point.y - min_y),
-                      y_scalefactor * (last_point.x - min_x), y_scalefactor * (last_point.y - min_y) );
+                      x_scalefactor * (last_point.x - min_x), y_scalefactor * (last_point.y - min_y) );
 
-          
+        
       }
-	
+      
+      // inner_hull = NP[1];
+      // outer_hull = NP[0];
+      // inner_iter = 0;
+      // outer_iter = 0;
+       
+      // Join the convex hulls
+      // while(true){
+      //   if (orientation(outer_hull[outer_iter], inner_hull[inner_iter], inner_hull[inner_iter+1]) == 2){
+      //     inner_iter++;
+
+      //     while (orientation(inner_hull[inner_iter-1], inner_hull[inner_iter], outer_hull[outer_iter+1]) == 2){
+      //       outer_iter++;
+      //     }
+
+      //     XDrawLine(display_ptr, win, gc, x_scalefactor * (outer_hull[outer_iter].x - min_x), y_scalefactor * (outer_hull[outer_iter].y - min_y),
+      //                 x_scalefactor * (inner_hull[inner_iter].x - min_x), y_scalefactor * (inner_hull[inner_iter].y - min_y) );
+      //     if (outer_iter == outer_hull.size()){
+      //       break;
+      //     }
+      //   }
+      // }
+
 
       break;
     case ConfigureNotify:
@@ -291,23 +332,7 @@ int main(int argc, char **argv)
 
       break;
     case ButtonPress:
-      /* This event happens when the user pushes a mouse button. I draw
-            a circle to show the point where it happened, but do not save 
-            the position; so when the next redraw event comes, these circles
-      disappear again. */
-      {
-        int x, y;
-        x = report.xbutton.x;
-        y = report.xbutton.y;
-        if (report.xbutton.button == Button1)
-          XFillArc(display_ptr, win, gc_red,
-                   x - win_height / 40, y - win_height / 40,
-                   win_height / 20, win_height / 20, 0, 360 * 64);
-        else
-          XFillArc(display_ptr, win, gc_yellow,
-                   x - win_height / 40, y - win_height / 40,
-                   win_height / 20, win_height / 20, 0, 360 * 64);
-      }
+      
       break;
     default:
       /* this is a catch-all for other events; it does not do anything.
